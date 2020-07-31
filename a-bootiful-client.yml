@@ -1,16 +1,2 @@
-message: Hello Spring olloloollololo!!!!!!!!!!!!!
+message: Not default example
 
-######################### SPRING BOOT ADMIN CLIENT (не работает в bootstrap)#########################
-management:
-  endpoint:
-    restart:
-      enabled: false
-    shutdown:
-      enabled: true
-    refresh:
-      enabled: true
-    heapdump.enabled: false
-    health.show-details: always
-  endpoints:
-    enabled-by-default: true
-    web.exposure.include: "*"
