@@ -64,7 +64,7 @@ management:
   endpoint:
     env.post.enabled: true
     shutdown.enabled: true
-    heapdump.enabled: true
+    heapdump.enabled: false
     health.show-details: always
   endpoints:
     enabled-by-default: true
