@@ -1,0 +1,92 @@
+spring:
+  redis:
+    host: ${REDIS_HOST}
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lowerCaseServiceId: true
+    loadbalancer:
+      ribbon:
+        enabled: false
+      routes:
+        - id: monolithello
+          uri: lb://monolit
+          predicates:
+            - Path=/hellofree
+        - id: monolithellonot
+          uri: lb://monolit
+          predicates:
+            - Path=/hellonotfree
+        - id: monolit
+          uri: lb://monolit
+          predicates:
+            - Path=/api/monolit/{segment}
+          filters:
+            - SetPath=/{segment}
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                # how many requests person can send per second
+                redis-rate-limiter.burstCapacity: 10
+                # how many requests person can send per single second (Capacity of redis buffer per person)
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            #              - Method=POST
+            #              - Path=/api/authService/update/{segment}
+            - Path=/api/auth/{segment}
+          filters:
+            - SetPath=/auth/{segment}
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 1
+                # how many requests person can send per second
+                redis-rate-limiter.burstCapacity: 2
+                # how many requests person can send per single second (Capacity of redis buffer per person)
+        - id: file_storage
+          uri: lb://file_storage
+          predicates:
+            - Method=GET
+            - Path=/api/fileStorage/{segment}
+          filters:
+            - SetPath=/{segment}
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: 5
+                # how many requests person can send per second
+                redis-rate-limiter.burstCapacity: 10
+                # how many requests person can send per single second (Capacity of redis buffer per person)
+
+######################### SPRING BOOT ADMIN CLIENT #########################
+management:
+  endpoint:
+    env.post.enabled: true
+    shutdown.enabled: true
+    heapdump.enabled: false
+    health.show-details: always
+  endpoints:
+    enabled-by-default: true
+    web.exposure.include: "*"
+
+eureka:
+  instance:
+    instanceId: ${spring.cloud.client.hostname}:${spring.application.name}:${spring.application.instance_id:${random.value}}
+    preferIpAddress: false
+    metadata-map:
+      user.name: ${ACTUATOR_LOGIN}         #These two are needed so that the server
+      user.password: ${ACTUATOR_PASSWORD}    #can access the protected client endpoints
+  client:
+    registryFetchIntervalSeconds: 30
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: ${EUREKA_HOST}
+    healthcheck:
+      enabled: true
+
+#instance.preferIpAddress в true и, когда приложение регистрируется в eureka, оно использует свой IP-адрес, а не имя хоста.
+
+
+
