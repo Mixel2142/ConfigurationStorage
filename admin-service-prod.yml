@@ -1,0 +1,48 @@
+server.port: ${EUREKA_SERVER_PORT}
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lowerCaseServiceId: true
+    loadbalancer:
+      ribbon:
+        enabled: false
+  boot:
+    admin: #доступен по localhost:8761/admin
+      context-path: /admin  #A different context path for admin server has been provided not conflicting with eureka
+
+######################### SPRING BOOT ADMIN CLIENT #########################
+management:
+  endpoint:
+    env.post.enabled: true
+    shutdown.enabled: true
+    heapdump.enabled: false
+    health.show-details: always
+  endpoints:
+    enabled-by-default: true
+    web.exposure.include: "*"
+
+eureka:
+  instance:
+    instanceId: ${spring.cloud.client.hostname}:${spring.application.name}:${spring.application.instance_id:${random.value}}}
+    preferIpAddress: false
+    metadata-map:
+      user.name: ${ACTUATOR_LOGIN}        #These two are needed so that the server
+      user.password: ${ACTUATOR_PASSWORD}    #can access the protected client endpoints
+  client:
+    #    proxy-host: ?????
+    registryFetchIntervalSeconds: 5
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: ${EUREKA_HOST}
+    healthcheck:
+      enabled: true
+  server:
+    enable-self-preservation: false #default true
+    eviction-interval-timer-in-ms: 10000 #default 60000
+    response-cache-update-interval-ms: 3000 #default 30000
+    use-read-only-response-cache: false
